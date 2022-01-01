@@ -47,6 +47,12 @@ class PolaroidCamera {
         }
     }
 
+    fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) : PolaroidCamera {
+        return apply {
+            polaroid.genericLoadCallback = callback
+        }
+    }
+
     fun into(imageView: ImageView?) : PolaroidCamera {
         return apply {
             polaroid.imageViewToLoadInto = imageView

@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
             .load(imageUrl)
             .into(imageView2)
             .with(R.drawable.ic_launcher_foreground)
+            .onGenericCallback { bmp, e ->
+                Log.d("ImageLoad", "generic: $bmp or $e")
+            }
             .display()
 //
 //        lifecycleScope.launch {

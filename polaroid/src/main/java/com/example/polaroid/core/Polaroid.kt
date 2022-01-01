@@ -10,7 +10,7 @@ import com.example.polaroid.utils.ResultHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import java.lang.Exception
+import kotlin.Exception
 
 class Polaroid private constructor() {
 
@@ -22,6 +22,7 @@ class Polaroid private constructor() {
 
     var imageLoadErrorCallback: (t: Exception) -> Unit = {}
     var imageLoadSuccessCallback: (bmp: Bitmap) -> Unit = {}
+    var genericLoadCallback: (bmp: Bitmap?, e: Exception?) -> Unit = {bmp, e -> }
 
     @DrawableRes
     @ColorRes
@@ -44,13 +45,23 @@ class Polaroid private constructor() {
     private suspend fun handleFetchAndSet() {
         when(val bitmapResult = Injector.resourceFetcher.fetchResource(url = imageUrlToFetchFrom)) {
             is ResultHolder.Success -> {
-                imageLoadSuccessCallback.invoke(bitmapResult.result)
+                sendSuccessCallback(bitmapResult.result)
                 imageViewToLoadInto?.setImageBitmap(bitmapResult.result)
             }
             is ResultHolder.Error -> {
-                imageLoadErrorCallback.invoke(bitmapResult.e)
+                sendErrorCallback(bitmapResult.e)
             }
         }
+    }
+
+    private fun sendSuccessCallback(bmp: Bitmap) {
+        imageLoadSuccessCallback.invoke(bmp)
+        genericLoadCallback.invoke(bmp, null)
+    }
+
+    private fun sendErrorCallback(e: Exception) {
+        imageLoadErrorCallback.invoke(e)
+        genericLoadCallback.invoke(null, e)
     }
 
     private fun handlePreFetchPlaceholder() {
