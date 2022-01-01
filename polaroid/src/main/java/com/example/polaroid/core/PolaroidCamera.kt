@@ -1,5 +1,6 @@
 package com.example.polaroid.core
 
+import android.graphics.Bitmap
 import android.util.Log
 import android.widget.ImageView
 import androidx.annotation.ColorRes
@@ -31,6 +32,18 @@ class PolaroidCamera {
     fun with(@DrawableRes @ColorRes placeholder: Int) : PolaroidCamera {
         return apply {
             this.polaroid.placeholderWhileFetching = placeholder
+        }
+    }
+
+    fun onSuccessLoad(callback: (bmp: Bitmap) -> Unit) : PolaroidCamera {
+        return apply {
+            polaroid.imageLoadSuccessCallback = callback
+        }
+    }
+
+    fun onFailedLoad(callback: (t: Exception) -> Unit) : PolaroidCamera {
+        return apply {
+            polaroid.imageLoadErrorCallback = callback
         }
     }
 

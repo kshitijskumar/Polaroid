@@ -1,13 +1,16 @@
 package com.example.polaroid.core
 
+import android.graphics.Bitmap
 import android.util.Log
 import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.example.polaroid.injector.Injector
+import com.example.polaroid.utils.ResultHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import java.lang.Exception
 
 class Polaroid private constructor() {
 
@@ -16,6 +19,9 @@ class Polaroid private constructor() {
     lateinit var scope: CoroutineScope
     var imageUrlToFetchFrom: String = ""
     var imageViewToLoadInto: ImageView? = null
+
+    var imageLoadErrorCallback: (t: Exception) -> Unit = {}
+    var imageLoadSuccessCallback: (bmp: Bitmap) -> Unit = {}
 
     @DrawableRes
     @ColorRes
@@ -30,9 +36,27 @@ class Polaroid private constructor() {
             findAndCancelCurrentJob(jobId)
             return
         }
-        val bitmap = Injector.resourceFetcher.fetchResource(url = imageUrlToFetchFrom)
-        imageViewToLoadInto?.setImageBitmap(bitmap)
+        handlePreFetchPlaceholder()
+        handleFetchAndSet()
         findAndCancelCurrentJob(jobId)
+    }
+
+    private suspend fun handleFetchAndSet() {
+        when(val bitmapResult = Injector.resourceFetcher.fetchResource(url = imageUrlToFetchFrom)) {
+            is ResultHolder.Success -> {
+                imageLoadSuccessCallback.invoke(bitmapResult.result)
+                imageViewToLoadInto?.setImageBitmap(bitmapResult.result)
+            }
+            is ResultHolder.Error -> {
+                imageLoadErrorCallback.invoke(bitmapResult.e)
+            }
+        }
+    }
+
+    private fun handlePreFetchPlaceholder() {
+        placeholderWhileFetching?.let {
+            imageViewToLoadInto?.setImageResource(it)
+        }
     }
 
     private fun findAndCancelCurrentJob(jobId: Int) {

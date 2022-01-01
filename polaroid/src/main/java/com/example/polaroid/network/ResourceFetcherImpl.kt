@@ -3,6 +3,8 @@ package com.example.polaroid.network
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.example.polaroid.exceptions.NullBitmap
+import com.example.polaroid.utils.ResultHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -13,7 +15,7 @@ import java.net.URL
 
 class ResourceFetcherImpl : ResourceFetcher {
 
-    override suspend fun fetchResource(url: String): Bitmap? {
+    override suspend fun fetchResource(url: String): ResultHolder<Bitmap> {
         return withContext(Dispatchers.IO) {
             try {
                 val bitmapResult = kotlin.runCatching {
@@ -22,18 +24,22 @@ class ResourceFetcherImpl : ResourceFetcher {
                     val connection = urlObject.openConnection() as HttpURLConnection
                     val bitmap = BitmapFactory.decodeStream(connection.inputStream)
                     connection.disconnect()
-                    bitmap
+                    if (bitmap != null) {
+                        ResultHolder.Success(bitmap)
+                    } else {
+                        ResultHolder.Error(NullBitmap())
+                    }
                 }
                 bitmapResult.getOrThrow()
             } catch (e: MalformedURLException) {
                 Log.d("Polaroid", "malformed url: $e")
-                null
+                ResultHolder.Error(e)
             } catch (e: IOException) {
                 Log.d("Polaroid", "issue opening connection to server: $e")
-                null
+                ResultHolder.Error(e)
             } catch (e: Exception) {
                 Log.d("Polaroid", "something went wrong: $e")
-                null
+                ResultHolder.Error(e)
             }
         }
     }
