@@ -7,6 +7,7 @@ import android.widget.ImageView
 import androidx.lifecycle.lifecycleScope
 import com.example.polaroid.core.Polaroid
 import com.example.polaroid.core.PolaroidCamera
+import com.example.polaroid.transformations.PolaroidTransformations
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
             .into(imageView)
             .with(R.color.black)
             .onSuccessLoad {
-                Log.d("ImageLoad", "loading: $it")
+                Log.d("ImageLoad", "loaded: $it")
             }
             .onFailedLoad {
                 Log.d("ImageLoad", "error: $it")
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
             .onGenericCallback { bmp, e ->
                 Log.d("ImageLoad", "generic: $bmp or $e")
             }
+            .transformImage(PolaroidTransformations.RoundedCornerTransformation(20))
             .display()
 //
 //        lifecycleScope.launch {

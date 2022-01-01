@@ -6,10 +6,11 @@ import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.example.polaroid.injector.Injector
+import com.example.polaroid.transformations.PolaroidTransformations
+import com.example.polaroid.transformations.PolaroidTransformations.NoTransformation
 import com.example.polaroid.utils.ResultHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlin.Exception
 
 class Polaroid private constructor() {
@@ -20,6 +21,10 @@ class Polaroid private constructor() {
     var imageUrlToFetchFrom: String = ""
     var imageViewToLoadInto: ImageView? = null
 
+    private val imageTransformerHelper by lazy {
+        Injector.imageTransformerHelper
+    }
+
     var imageLoadErrorCallback: (t: Exception) -> Unit = {}
     var imageLoadSuccessCallback: (bmp: Bitmap) -> Unit = {}
     var genericLoadCallback: (bmp: Bitmap?, e: Exception?) -> Unit = {bmp, e -> }
@@ -27,6 +32,8 @@ class Polaroid private constructor() {
     @DrawableRes
     @ColorRes
     var placeholderWhileFetching: Int? = null
+
+    var imageTransformation: PolaroidTransformations = NoTransformation
 
     private constructor(scope: CoroutineScope) : this() {
         this.scope = scope
@@ -46,7 +53,7 @@ class Polaroid private constructor() {
         when(val bitmapResult = Injector.resourceFetcher.fetchResource(url = imageUrlToFetchFrom)) {
             is ResultHolder.Success -> {
                 sendSuccessCallback(bitmapResult.result)
-                imageViewToLoadInto?.setImageBitmap(bitmapResult.result)
+                handleIfAnyTransformationBeforeLoading(bitmapResult.result)
             }
             is ResultHolder.Error -> {
                 sendErrorCallback(bitmapResult.e)
@@ -73,6 +80,11 @@ class Polaroid private constructor() {
     private fun findAndCancelCurrentJob(jobId: Int) {
         val currentJob = imageFetchingJobs.remove(jobId)
         currentJob?.cancel()
+    }
+
+    private fun handleIfAnyTransformationBeforeLoading(bmp: Bitmap) {
+        val bitmapToLoad = imageTransformerHelper.transformImage(bmp, imageTransformation)
+        imageViewToLoadInto?.setImageBitmap(bitmapToLoad)
     }
 
     private fun shouldTryFetchingAndLoading(): Boolean {

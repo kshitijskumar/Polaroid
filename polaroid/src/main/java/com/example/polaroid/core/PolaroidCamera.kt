@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import com.example.polaroid.transformations.PolaroidTransformations
 import kotlinx.coroutines.*
 
 class PolaroidCamera {
@@ -50,6 +51,12 @@ class PolaroidCamera {
     fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) : PolaroidCamera {
         return apply {
             polaroid.genericLoadCallback = callback
+        }
+    }
+
+    fun transformImage(transformation: PolaroidTransformations) : PolaroidCamera {
+        return apply {
+            polaroid.imageTransformation = transformation
         }
     }
 
