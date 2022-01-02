@@ -50,7 +50,7 @@ class Polaroid private constructor() {
     }
 
     private suspend fun handleFetchAndSet() {
-        when(val bitmapResult = Injector.resourceFetcher.fetchResource(url = imageUrlToFetchFrom)) {
+        when(val bitmapResult = Injector.resourceRepository.getBitmapForUrl(imageViewToLoadInto?.context!!, imageUrlToFetchFrom)) {
             is ResultHolder.Success -> {
                 sendSuccessCallback(bitmapResult.result)
                 handleIfAnyTransformationBeforeLoading(bitmapResult.result)
