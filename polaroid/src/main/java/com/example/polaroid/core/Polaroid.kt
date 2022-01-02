@@ -83,7 +83,7 @@ class Polaroid private constructor() {
     }
 
     private fun handleIfAnyTransformationBeforeLoading(bmp: Bitmap) {
-        val bitmapToLoad = imageTransformerHelper.transformImage(bmp, imageTransformation)
+        val bitmapToLoad = imageTransformerHelper.transformImage(bmp, imageTransformation, imageViewToLoadInto?.height!!, imageViewToLoadInto?.width!!)
         imageViewToLoadInto?.setImageBitmap(bitmapToLoad)
     }
 

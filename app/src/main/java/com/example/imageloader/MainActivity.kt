@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
             .onFailedLoad {
                 Log.d("ImageLoad", "error: $it")
             }
+            .transformImage(PolaroidTransformations.CircularTransformation)
             .display()
 
         val jobId = PolaroidCamera()

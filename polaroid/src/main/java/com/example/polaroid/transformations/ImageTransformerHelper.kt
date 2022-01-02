@@ -4,7 +4,12 @@ import android.graphics.*
 import kotlin.math.min
 
 interface ImageTransformerHelper {
-    fun transformImage(sourceBitmap: Bitmap, transformation: PolaroidTransformations) : Bitmap
+    fun transformImage(
+        sourceBitmap: Bitmap,
+        transformation: PolaroidTransformations,
+        viewHeight: Int,
+        viewWidth: Int
+    ) : Bitmap
 }
 
 class ImageTransformerHelperImpl : ImageTransformerHelper {
@@ -12,19 +17,23 @@ class ImageTransformerHelperImpl : ImageTransformerHelper {
     override fun transformImage(
         sourceBitmap: Bitmap,
         transformation: PolaroidTransformations,
+        viewHeight: Int,
+        viewWidth: Int
     ): Bitmap {
         return when(transformation) {
             is PolaroidTransformations.NoTransformation -> {
                 sourceBitmap
             }
             is PolaroidTransformations.CircularTransformation -> {
-                return doCircularTransformation(sourceBitmap)
+                doCircularTransformation(sourceBitmap, viewHeight, viewWidth)
             }
             is PolaroidTransformations.CustomCornerTransformation -> {
                 doCorneredTransformation(
                     sourceBitmap,
                     transformation.tl,
                     transformation.tr,
+                    viewHeight,
+                    viewWidth
                 )
             }
             is PolaroidTransformations.RoundedCornerTransformation -> {
@@ -32,12 +41,18 @@ class ImageTransformerHelperImpl : ImageTransformerHelper {
                     sourceBitmap,
                     transformation.all,
                     transformation.all,
+                    viewHeight,
+                    viewWidth
                 )
             }
         }
     }
 
-    private fun doCircularTransformation(src: Bitmap) : Bitmap {
+    private fun doCircularTransformation(
+        src: Bitmap,
+        viewHeight: Int,
+        viewWidth: Int,
+    ) : Bitmap {
         val width = src.width
         val height = src.height
 
@@ -59,7 +74,13 @@ class ImageTransformerHelperImpl : ImageTransformerHelper {
         return output
     }
 
-    private fun doCorneredTransformation(src: Bitmap, tl: Int, tr: Int) : Bitmap {
+    private fun doCorneredTransformation(
+        src: Bitmap,
+        tl: Int,
+        tr: Int,
+        viewHeight: Int,
+        viewWidth: Int
+    ) : Bitmap {
         val width = src.width
         val height = src.height
 
