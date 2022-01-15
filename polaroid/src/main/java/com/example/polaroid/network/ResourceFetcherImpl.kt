@@ -4,19 +4,21 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.polaroid.exceptions.NullBitmap
+import com.example.polaroid.injector.DispatcherProvider
+import com.example.polaroid.injector.Injector
 import com.example.polaroid.utils.ResultHolder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 
-class ResourceFetcherImpl : ResourceFetcher {
+class ResourceFetcherImpl(
+    private val dispatchers: DispatcherProvider = Injector.dispatchers
+) : ResourceFetcher {
 
     override suspend fun fetchResource(url: String): ResultHolder<Bitmap> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.ioDispatcher) {
             try {
                 val bitmapResult = kotlin.runCatching {
                     val urlObject = URL(url)

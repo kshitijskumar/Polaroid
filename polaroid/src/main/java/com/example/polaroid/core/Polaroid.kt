@@ -11,7 +11,6 @@ import com.example.polaroid.transformations.PolaroidTransformations.NoTransforma
 import com.example.polaroid.utils.ResultHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlin.Exception
 
 class Polaroid private constructor() {
 
@@ -118,6 +117,27 @@ class Polaroid private constructor() {
         fun cancelImageLoading(jobId: Int) {
             imageFetchingJobs.remove(jobId)?.apply {
                 cancel()
+            }
+        }
+
+        fun getPolaroid(
+            imageview: ImageView?,
+            scope: CoroutineScope,
+            imageUrl: String,
+            placeholder: Int?,
+            onSuccessLoad: (bmp: Bitmap) -> Unit,
+            onFailedLoad: (t: Exception) -> Unit,
+            onAllCallback: (bmp: Bitmap?, e: Exception?) -> Unit,
+            transformations: PolaroidTransformations
+        ) : Polaroid {
+            return Polaroid(scope).apply {
+                this.imageTransformation = transformations
+                this.imageUrlToFetchFrom = imageUrl
+                this.placeholderWhileFetching = placeholder
+                this.imageLoadSuccessCallback = onSuccessLoad
+                this.imageLoadErrorCallback = onFailedLoad
+                this.genericLoadCallback = onAllCallback
+                this.imageViewToLoadInto = imageview
             }
         }
 

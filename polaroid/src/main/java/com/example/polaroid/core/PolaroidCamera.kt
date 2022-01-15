@@ -1,72 +1,70 @@
 package com.example.polaroid.core
 
 import android.graphics.Bitmap
-import android.util.Log
 import android.widget.ImageView
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.example.polaroid.transformations.PolaroidTransformations
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PolaroidCamera {
     private lateinit var polaroid: Polaroid
 
-    fun scoped(scope: CoroutineScope) : PolaroidCamera {
-        return apply {
-            this.polaroid = Polaroid.getPolaroid(scope)
-        }
+    private var scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private var imageUrl: String = ""
+
+    @DrawableRes
+    @ColorRes
+    private var placeholder: Int? = null
+
+    private var onSuccessLoad: (bmp: Bitmap) -> Unit = {}
+    private var onFailedLoad: (t: Exception) -> Unit = {}
+    private var onAllCallback: (bmp: Bitmap?, e: Exception?) -> Unit = { _, _ -> }
+
+    private var transformImage: PolaroidTransformations = PolaroidTransformations.NoTransformation
+
+
+    fun scoped(init: PolaroidCamera.() -> CoroutineScope) {
+        this.scope = this.init()
     }
 
-    fun scoped() : PolaroidCamera {
-        val scope = CoroutineScope(Dispatchers.Main)
-        return apply {
-            this.polaroid = Polaroid.getPolaroid(scope)
-        }
+    fun placeholder(init: PolaroidCamera.() -> Int?) {
+        this.placeholder = this.init()
     }
 
-    fun load(imageUrl: String) : PolaroidCamera {
-        return apply {
-            this.polaroid.imageUrlToFetchFrom = imageUrl
-        }
+    fun transformInto(init: PolaroidCamera.() -> PolaroidTransformations) {
+        this.transformImage = this.init()
     }
 
-    fun with(@DrawableRes @ColorRes placeholder: Int) : PolaroidCamera {
-        return apply {
-            this.polaroid.placeholderWhileFetching = placeholder
-        }
+    fun imageUrl(init: PolaroidCamera.() -> String) {
+        this.imageUrl = this.init()
     }
 
-    fun onSuccessLoad(callback: (bmp: Bitmap) -> Unit) : PolaroidCamera {
-        return apply {
-            polaroid.imageLoadSuccessCallback = callback
-        }
+    fun onSuccessLoad(callback: (bmp: Bitmap) -> Unit) {
+        this.onSuccessLoad = callback
     }
 
-    fun onFailedLoad(callback: (t: Exception) -> Unit) : PolaroidCamera {
-        return apply {
-            polaroid.imageLoadErrorCallback = callback
-        }
+    fun onFailedLoad(callback: (t: Exception) -> Unit) {
+        this.onFailedLoad = callback
     }
 
-    fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) : PolaroidCamera {
-        return apply {
-            polaroid.genericLoadCallback = callback
-        }
+    fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) {
+        this.onAllCallback = callback
     }
 
-    fun transformImage(transformation: PolaroidTransformations) : PolaroidCamera {
-        return apply {
-            polaroid.imageTransformation = transformation
-        }
-    }
-
-    fun into(imageView: ImageView?) : PolaroidCamera {
-        return apply {
-            polaroid.imageViewToLoadInto = imageView
-        }
-    }
-
-    fun display() : Int {
+    fun display(imageView: ImageView?): Int {
+        this.polaroid = Polaroid.getPolaroid(
+            imageView,
+            scope,
+            imageUrl,
+            placeholder,
+            onSuccessLoad,
+            onFailedLoad,
+            onAllCallback,
+            transformImage
+        )
         val workerJob = polaroid.scope.launch {
             polaroid.fetchAndLoadImage(this.hashCode())
         }.apply {
@@ -75,4 +73,12 @@ class PolaroidCamera {
         return workerJob.hashCode()
     }
 
+}
+
+fun ImageView.loadImage(url: String, options: PolaroidCamera.() -> Unit = {}): Int {
+    val polaroidCamera = PolaroidCamera().apply {
+        imageUrl { url }
+        this.options()
+    }
+    return polaroidCamera.display(this)
 }

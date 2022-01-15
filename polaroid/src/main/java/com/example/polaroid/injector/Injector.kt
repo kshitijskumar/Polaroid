@@ -8,6 +8,8 @@ import com.example.polaroid.network.ResourceFetcher
 import com.example.polaroid.network.ResourceFetcherImpl
 import com.example.polaroid.transformations.ImageTransformerHelper
 import com.example.polaroid.transformations.ImageTransformerHelperImpl
+import kotlinx.coroutines.Dispatchers
+import kotlin.coroutines.CoroutineContext
 
 object Injector {
 
@@ -25,5 +27,18 @@ object Injector {
     val memoryCache: PolaroidCache by lazy {
         PolaroidMemoryCache()
     }
+    val dispatchers: DispatcherProvider by lazy {
+        object : DispatcherProvider {
+            override val ioDispatcher: CoroutineContext
+                get() = Dispatchers.IO
+            override val mainDispatcher: CoroutineContext
+                get() = Dispatchers.Main
+        }
+    }
 
+}
+
+interface DispatcherProvider {
+    val ioDispatcher: CoroutineContext
+    val mainDispatcher: CoroutineContext
 }

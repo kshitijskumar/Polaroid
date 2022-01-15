@@ -1,17 +1,19 @@
 package com.example.imageloader
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.polaroid.core.Polaroid
-import com.example.polaroid.core.PolaroidCamera
+import com.example.polaroid.core.loadImage
 import com.example.polaroid.transformations.PolaroidTransformations
 
 class MainActivity : AppCompatActivity() {
 
-    private val imageUrl: String = "https://picsum.photos/200"
+    private val url1 =
+        "https://static0.srcdn.com/wordpress/wp-content/uploads/2019/10/Shikamaru-Nara-In-Naruto.jpg?q=50&fit=crop&w=960&h=500&dpr=1.5"
+    private val url2 =
+        "https://www.ubuy.co.in/productimg/?image=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNzFCUERGNlYxRkwuX0FDX1NMMTUwMF8uanBn.jpg"
 
 
     private val imageView: ImageView by lazy {
@@ -26,36 +28,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        imageView.loadImage(url1) {
+            transformInto { PolaroidTransformations.CircularTransformation }
+            placeholder { R.drawable.ic_launcher_background }
+        }
 
-        PolaroidCamera()
-            .scoped(lifecycleScope)
-            .load("https://static0.srcdn.com/wordpress/wp-content/uploads/2019/10/Shikamaru-Nara-In-Naruto.jpg?q=50&fit=crop&w=960&h=500&dpr=1.5")
-            .into(imageView)
-            .with(R.color.black)
-            .onSuccessLoad {
-                Log.d("ImageLoad", "loaded: $it")
+        imageView2.loadImage(url2) {
+            scoped { lifecycleScope }
+            placeholder { R.color.black }
+            onSuccessLoad {
+                Log.d("PolaroidLoad", "success")
             }
-            .onFailedLoad {
-                Log.d("ImageLoad", "error: $it")
-            }
-            .transformImage(PolaroidTransformations.CircularTransformation)
-            .display()
-
-        val jobId = PolaroidCamera()
-            .scoped(lifecycleScope)
-            .load("https://www.ubuy.co.in/productimg/?image=aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNzFCUERGNlYxRkwuX0FDX1NMMTUwMF8uanBn.jpg")
-            .into(imageView2)
-            .with(R.drawable.ic_launcher_foreground)
-            .onGenericCallback { bmp, e ->
-                Log.d("ImageLoad", "generic: $bmp or $e")
-            }
-            .transformImage(PolaroidTransformations.RoundedCornerTransformation(20))
-            .display()
-//
-//        lifecycleScope.launch {
-//            delay(3000)
-//            Polaroid.cancelImageLoading(jobId)
-//        }
+        }
 
     }
 }
