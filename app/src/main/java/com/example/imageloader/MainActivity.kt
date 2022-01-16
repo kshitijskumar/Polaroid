@@ -29,13 +29,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         imageView.loadImage(url1) {
-            transformInto { PolaroidTransformations.CircularTransformation }
-            placeholder { R.drawable.ic_launcher_background }
+            this transformsInto PolaroidTransformations.CircularTransformation
+            this withPlaceholder R.drawable.ic_launcher_background
         }
 
         imageView2.loadImage(url2) {
-            scoped { lifecycleScope }
-            placeholder { R.color.black }
+            this scopedTo lifecycleScope
+            this withPlaceholder R.color.black
             onSuccessLoad {
                 Log.d("PolaroidLoad", "success")
             }

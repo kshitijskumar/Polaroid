@@ -25,32 +25,31 @@ class PolaroidCamera {
 
     private var transformImage: PolaroidTransformations = PolaroidTransformations.NoTransformation
 
-
-    fun scoped(init: PolaroidCamera.() -> CoroutineScope) {
-        this.scope = this.init()
+    infix fun scopedTo(scope: CoroutineScope) {
+        this.scope = scope
     }
 
-    fun placeholder(init: PolaroidCamera.() -> Int?) {
-        this.placeholder = this.init()
+    infix fun withPlaceholder(placeholder: Int?) {
+        this.placeholder = placeholder
     }
 
-    fun transformInto(init: PolaroidCamera.() -> PolaroidTransformations) {
-        this.transformImage = this.init()
+    infix fun transformsInto(transformation: PolaroidTransformations) {
+        this.transformImage = transformation
     }
 
     fun imageUrl(init: PolaroidCamera.() -> String) {
         this.imageUrl = this.init()
     }
 
-    fun onSuccessLoad(callback: (bmp: Bitmap) -> Unit) {
+    infix fun onSuccessLoad(callback: (bmp: Bitmap) -> Unit) {
         this.onSuccessLoad = callback
     }
 
-    fun onFailedLoad(callback: (t: Exception) -> Unit) {
+    infix fun onFailedLoad(callback: (t: Exception) -> Unit) {
         this.onFailedLoad = callback
     }
 
-    fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) {
+    infix fun onGenericCallback(callback: (bmp: Bitmap?, e: Exception?) -> Unit) {
         this.onAllCallback = callback
     }
 
